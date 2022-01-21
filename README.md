@@ -4,9 +4,9 @@ This project may generate a verilog(vhdl) RAM, which will cause GowinIDE Synther
 
 这个项目可能会使用到verilog(vhdl)的RAM, 这会导致高云IDE的综合器生成**完全错误**的结果.
 
-To fix this problem, please open the gowin post synth netlist file (.vg), manually replace **OCE(GND)** to **OCE(VCC)** . Or your BSRAM will not work properly.
+To fix this problem, please open the gowin post synth netlist file (.vg), manually replace **OCE(GND)** to **OCE(VCC)** . Or your BSRAM will not work properly (4bit mode / 8bit mode will get wrong output).
 
-要解决这个问题, 请手工打开高云综合后的网表文件(.vg), 手工替换 **OCE(GND)** 成为 **OCE(VCC)** . 否则BSRAM将会无法正常工作.
+要解决这个问题, 请手工打开高云综合后的网表文件(.vg), 手工替换 **OCE(GND)** 成为 **OCE(VCC)** . 否则BSRAM将会无法正常工作 (4bit / 8bit模式下将会输出错误的数据).
 
 We already send an email to Gowin support, but there are still no response yet.
 
