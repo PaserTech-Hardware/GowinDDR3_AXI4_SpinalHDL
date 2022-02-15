@@ -4,13 +4,13 @@ This project may generate a verilog(vhdl) RAM, which may cause GowinIDE Synther 
 
 这个项目可能会使用到verilog(vhdl)的RAM, 这可能会导致高云IDE的综合器生成**完全错误**的结果.
 
-~~ To fix this problem, please open the gowin post synth netlist file (.vg), manually replace **OCE(GND)** to **OCE(VCC)** . Or your BSRAM will not work properly (4bit mode / 8bit mode will get wrong output). ~~
+~~To fix this problem, please open the gowin post synth netlist file (.vg), manually replace **OCE(GND)** to **OCE(VCC)** . Or your BSRAM will not work properly (4bit mode / 8bit mode will get wrong output).~~
 
-~~ 要解决这个问题, 请手工打开高云综合后的网表文件(.vg), 手工替换 **OCE(GND)** 成为 **OCE(VCC)** . 否则BSRAM将会无法正常工作 (4bit / 8bit模式下将会输出错误的数据). ~~
+~~要解决这个问题, 请手工打开高云综合后的网表文件(.vg), 手工替换 **OCE(GND)** 成为 **OCE(VCC)** . 否则BSRAM将会无法正常工作 (4bit / 8bit模式下将会输出错误的数据).~~
 
-To fix this problem, please select "GW2A-18C" series in GowinIDE instead of "GW2A-18". Gowin fae said that "C" is the suffix of the newest chip.
+To fix this problem, please select "GW2A-18C" series in GowinIDE instead of "GW2A-18". Gowin fae said that "C" is the suffix of the newest chip, you can check the chip's 3rd line, the new chip will have a "C" mark follow the serial number.
 
-要解决这个问题, 请在高云IDE中选择"GW2A-18C", 而不是"GW2A-18". 高云fae表示"C"后缀是新版芯片的标识.
+要解决这个问题, 请在高云IDE中选择"GW2A-18C", 而不是"GW2A-18". 高云fae表示"C"后缀是新版芯片的标识, 可以查看芯片表面的第三行丝印, 新版芯片会在数字序列号后面跟着一个"C"标识.
 
 
 # Gowin DDR3 Controller with AXI4 Implementation
