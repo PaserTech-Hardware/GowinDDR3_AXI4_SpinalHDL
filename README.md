@@ -1,4 +1,4 @@
-# ⚠️⚠️⚠️ BEWARE | 警告 ⚠️⚠️⚠️
+# Notice / 提示
 
 This project may generate a verilog(vhdl) RAM, which may cause GowinIDE Synther **ABSOLUTELY WRONG RESULT**.
 
