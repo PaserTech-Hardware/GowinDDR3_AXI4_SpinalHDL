@@ -5,11 +5,11 @@ import spinal.lib.bus.amba4.axi.{Axi4, Axi4Shared, Axi4SpecRenamer, Axi4ToAxi4Sh
 import spinal.lib.io.InOutWrapper
 import spinal.lib.{master, slave}
 
-object Generate_Paski_GowinDDR_AXI4_Compatible {
+object Generate_Paski_GowinDDR_AXI4_WithDMA_Compatible {
   def main(args: Array[String]) {
     SpinalVerilog(
       InOutWrapper(
-        Paski_GowinDDR_AXI4_Compatible(
+        Paski_GowinDDR_AXI4_WithDMA_Compatible(
           ClockDomain.external("sys_clk", config = ClockDomainConfig(resetKind = ASYNC, resetActiveLevel = LOW)),
           ClockDomain.external("mem_clk", config = ClockDomainConfig(resetKind = ASYNC, resetActiveLevel = LOW))
         )
@@ -18,13 +18,15 @@ object Generate_Paski_GowinDDR_AXI4_Compatible {
   }
 }
 
-case class Paski_GowinDDR_AXI4_Compatible(sys_clk: ClockDomain, mem_clk: ClockDomain) extends Component{
-  val inst = Paski_GowinDDR_AXI4(sys_clk, mem_clk)
+case class Paski_GowinDDR_AXI4_WithDMA_Compatible(sys_clk: ClockDomain, mem_clk: ClockDomain) extends Component{
+  val inst = Paski_GowinDDR_AXI4_WithDMA(sys_clk, mem_clk)
   val axiConfig = inst.axiController.axiConfig
+  val context_type = inst.axiController.context_type
 
   val io = new Bundle() {
     val pll_lock = in Bool()
     val axi = slave(Axi4(axiConfig))
+    val ddr_dma_bus = Paski_GowinDDR3_Bus_Device(contextType = context_type)
     val ddr_iface = master(DDR3_Interface())
   }
 
@@ -33,11 +35,12 @@ case class Paski_GowinDDR_AXI4_Compatible(sys_clk: ClockDomain, mem_clk: ClockDo
   val sys_area = new ClockingArea(sys_clk) {
     inst.io.pll_lock := io.pll_lock
     inst.io.axi << Axi4ToAxi4Shared(io.axi)
+    io.ddr_dma_bus <> inst.io.ddr_dma_bus
     io.ddr_iface := inst.io.ddr_iface
   }
 }
 
-case class Paski_GowinDDR_AXI4(sys_clk: ClockDomain, mem_clk: ClockDomain) extends Component{
+case class Paski_GowinDDR_AXI4_WithDMA(sys_clk: ClockDomain, mem_clk: ClockDomain) extends Component{
 
   val gowin_DDR3 = Gowin_DDR3(
     sys_clk,
@@ -46,25 +49,37 @@ case class Paski_GowinDDR_AXI4(sys_clk: ClockDomain, mem_clk: ClockDomain) exten
   val ddr_ref_clk = gowin_DDR3.clk_out
 
   val axiController = Paski_GowinDDR_AXI4WithCache(
-    sys_clk, 32, 27, 4 // Modify here to change the width of the data bus
+    sys_clk, 32, 27, 4
+  )
+
+  val busArbiter = Paski_GowinDDR3_BusArbiter(
+    sys_clk,
+    contextType = axiController.context_type
   )
 
   val controller = Paski_GowinDDR14_Controller(
     sys_clk,
     ddr_ref_clk,
-    contextType = axiController.context_type,
+    contextType = busArbiter.bus_context,
     fifo_length = 4
   )
 
   val io = new Bundle() {
     val pll_lock = in Bool()
     val axi = slave(Axi4Shared(axiController.axiConfig))
+    val ddr_dma_bus = Paski_GowinDDR3_Bus_Device(contextType = axiController.context_type)
     val ddr_iface = master(DDR3_Interface())
   }
 
   val sys_area = new ClockingArea(sys_clk) {
-    axiController.io.ddr_cmd >> controller.io.ddr_cmd
-    axiController.io.ddr_rsp << controller.io.ddr_rsp
+    busArbiter.io.bus_ddr.cmd >/-> controller.io.ddr_cmd
+    busArbiter.io.bus_ddr.rsp <-/< controller.io.ddr_rsp
+
+    io.ddr_dma_bus.cmd >/-> busArbiter.io.bus_device_1.cmd
+    io.ddr_dma_bus.rsp <-/< busArbiter.io.bus_device_1.rsp
+
+    axiController.io.ddr_cmd >/-> busArbiter.io.bus_device_2.cmd
+    axiController.io.ddr_rsp <-/< busArbiter.io.bus_device_2.rsp
 
     io.axi.sharedCmd >> axiController.io.axi.sharedCmd
     io.axi.writeData >> axiController.io.axi.writeData
